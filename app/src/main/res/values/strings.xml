@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Mini Movie Database</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_search">Search</string>
+    <string name="Sort_pref">Sort By</string>
+    <string name="pref_popularity">Popularity</string>
+    <string name="pref_highest_rated">Highest Rated</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <string name="title_activity_detail">Additional Movie Details</string>
+    <string name="Fav">Favorite</string>
+    <string name="trailers">Movie Trailers</string>
+</resources>

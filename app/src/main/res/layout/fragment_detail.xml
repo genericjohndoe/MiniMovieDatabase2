@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_LL"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/movie_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <ImageView
+        android:id="@+id/movie_poster"
+        android:layout_width="105dp"
+        android:layout_height="157.5dp"
+        android:layout_below="@id/movie_title"/>
+
+    <TextView
+        android:id="@+id/movie_release_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf= "@id/movie_poster"
+        android:layout_below="@id/movie_title"/>
+
+    <TextView
+        android:id="@+id/movie_rating"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf= "@id/movie_poster"
+        android:layout_below="@id/movie_release_date"/>
+
+    <CheckBox
+        android:id="@+id/Fav"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Fav"
+        android:layout_below="@id/movie_rating"
+        android:layout_toRightOf="@+id/movie_poster"/>
+
+    <TextView
+        android:id="@+id/movie_plot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/movie_poster"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/movie_trailers"
+        android:layout_below="@id/movie_plot"
+        android:text="@string/trailers" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/movie_trailer_recyclerview"
+        android:scrollbars="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/movie_trailers"
+        android:orientation="horizontal"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reviews"
+        android:layout_below="@id/movie_trailer_recyclerview"
+        android:id="@+id/review"/>
+
+    <ListView
+        android:id="@+id/reviews"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/review"></ListView>
+</RelativeLayout>
