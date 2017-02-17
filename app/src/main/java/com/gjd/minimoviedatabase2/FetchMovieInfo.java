@@ -37,7 +37,7 @@ public class FetchMovieInfo extends AsyncTask<String, Void, Void> {
      * @param JsonString received from http request
      * @throws JSONException
      */
-    private void getMovieInfoFromJSON(String JsonString)
+    private void getMovieInfoFromJSON(String JsonString, String params)
             throws JSONException {
 
         JSONObject Json = new JSONObject(JsonString);
@@ -56,6 +56,13 @@ public class FetchMovieInfo extends AsyncTask<String, Void, Void> {
             movieValues.put(MovieContract.MovieEntry.COLUMN_POPULARITY, movie.getDouble("popularity"));
             movieValues.put(MovieContract.MovieEntry.COLUMN_API_ID, movie.getString("id"));
             movieValues.put(MovieContract.MovieEntry.COLUMN_IS_FAVORITE, 0);
+            if (params.equals(mContext.getString(R.string.search_popular))){
+                movieValues.put(MovieContract.MovieEntry.COLUMN_IS_POPULAR, 1);
+                movieValues.put(MovieContract.MovieEntry.COLUMN_IS_TOP_RATED, 0);
+            } else {
+                movieValues.put(MovieContract.MovieEntry.COLUMN_IS_POPULAR, 0);
+                movieValues.put(MovieContract.MovieEntry.COLUMN_IS_TOP_RATED, 1);
+            }
             cVVector.add(movieValues);
         }
 
@@ -137,7 +144,7 @@ public class FetchMovieInfo extends AsyncTask<String, Void, Void> {
             }
         }
         try {
-            getMovieInfoFromJSON(JsonStr);
+            getMovieInfoFromJSON(JsonStr, params[0]);
         } catch (JSONException e) {
             e.printStackTrace();
         }

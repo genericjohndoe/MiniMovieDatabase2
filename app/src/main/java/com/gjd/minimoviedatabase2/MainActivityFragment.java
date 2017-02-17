@@ -35,15 +35,14 @@ import java.util.concurrent.ExecutionException;
  * A placeholder fragment containing a simple view.
  */
 public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AdapterView.OnItemSelectedListener {
+    private final String TAG = "MainFragment";
     private RecyclerView mRecyclerView;
     private MovieAdapter mAdapter;
     private static final int MOVIE_LOADER = 0;
     private int mPosition = RecyclerView.NO_POSITION;
-    static Integer favCount;
     int spinnerState;
     Spinner spinner;
     String spinnerString;
-
 
 
     private static final String[] MOVIE_COLUMNS = {
@@ -96,9 +95,9 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
         mAdapter = new MovieAdapter(getActivity(), new MovieAdapter.MovieOnClickHandler() {
             @Override
-            public void onClick(long id , MovieAdapter.MovieViewHolder vh, int api) {
+            public void onClick(long id, MovieAdapter.MovieViewHolder vh, int api) {
                 ((Callback) getActivity())
-                        .onItemSelected(MovieContract.MovieEntry.buildMovieUri(id+1), api);
+                        .onItemSelected(MovieContract.MovieEntry.buildMovieUri(id + 1), api);
             }
         }, emptyView);
 
@@ -130,54 +129,55 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     }
 
     private void updateSort() {
+        FetchMovieInfo movieTask = new FetchMovieInfo(getContext());
         try {
-            FetchMovieInfo movieTask = new FetchMovieInfo(getContext());
-            String search = spinnerString.equals(getString(R.string.pref_popularity)) ? "popular" : "top_rated";
+            String search = spinnerString.equals(getString(R.string.pref_popularity)) ? getString(R.string.search_popular) : getString(R.string.search_top_rated);
             movieTask.execute(search);
+            //the reason why the .get() function is here is because this will update the UI automatically
+            //when the loader has data, without it screen rotation is required to get the movie icons to show initially
             movieTask.get();
-        } catch (InterruptedException e) {
-            Log.i("InterruptedException", "yes");
-        } catch (ExecutionException e) {
-            Log.i("execution exception", "yes");
+        }catch (InterruptedException e){
+            Log.e(TAG, e.toString());
+        }catch (ExecutionException e){
+            Log.e(TAG,e.toString());
         }
-        CharSequence text = "UpdateSort called";
-        int duration = Toast.LENGTH_SHORT;
-        Toast toast = Toast.makeText(getContext(), text, duration);
-        toast.show();
+    }
+
+    private void updateSortTop(){
+        //this method was add to ensure the top rated movies where in the database by the time
+        //they needed to be shown on the UI
+        FetchMovieInfo movieTask = new FetchMovieInfo(getContext());
+        movieTask.execute(getString(R.string.search_top_rated));
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        if (favCount == null){
-            updateSort();
-            favCount = new Integer(1);
-        }
+        updateSort();
+        updateSortTop();
     }
 
     @Override
-    public void onDestroy(){
+    public void onDestroy() {
         super.onDestroy();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt("Spinner State",  spinner.getSelectedItemPosition());
+        editor.putInt("Spinner State", spinner.getSelectedItemPosition());
         editor.putString("Default", spinnerString);
         editor.commit();
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int i, Bundle bundle){
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         if (spinnerString.equals(getString(R.string.pref_popularity))) {
-            String sortOrder = MovieContract.MovieEntry.COLUMN_POPULARITY + " DESC";
+            String selection = MovieContract.MovieEntry.COLUMN_IS_POPULAR + " = 1";
             return new CursorLoader(getContext(), MovieContract.MovieEntry.CONTENT_URI,
-                    MOVIE_COLUMNS, null, null, sortOrder);
-        }
-        else if  (spinnerString.equals(getString(R.string.pref_highest_rated))){
-            String sortOrder = MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE + " DESC";
+                    MOVIE_COLUMNS, selection, null, null);
+        } else if (spinnerString.equals(getString(R.string.pref_highest_rated))) {
+            String selection = MovieContract.MovieEntry.COLUMN_IS_TOP_RATED + " = 1";
             return new CursorLoader(getContext(), MovieContract.MovieEntry.CONTENT_URI,
-                    MOVIE_COLUMNS, null, null, sortOrder);
-        }
-        else {
+                    MOVIE_COLUMNS, selection, null, null);
+        } else {
             return new CursorLoader(getContext(), MovieContract.MovieEntry.CONTENT_URI,
                     MOVIE_COLUMNS, MovieContract.MovieEntry.COLUMN_IS_FAVORITE + "= 1", null, null);
         }
@@ -198,46 +198,48 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         // This is called when the last Cursor provided to onLoadFinished()
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
-        mAdapter.swapCursor(null);;
+        mAdapter.swapCursor(null);
+        ;
     }
 
-    public int numberOfColumns(){
+    public int numberOfColumns() {
         final int posterWidth = 105;
-        final int DIPperInch= 160;
+        final int DIPperInch = 160;
         DisplayMetrics metrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
         int orientation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
         if (orientation == Surface.ROTATION_0 || orientation == Surface.ROTATION_180) {
             return Math.round(metrics.widthPixels / metrics.ydpi * DIPperInch / posterWidth);
-        }else{
+        } else {
             return Math.round(metrics.widthPixels / metrics.xdpi * DIPperInch / posterWidth);
         }
     }
 
-    public String toString(Set<String> StringList){
-        String returnString ="";
+    public String toString(Set<String> StringList) {
+        String returnString = "";
         int Comma = 0;
-        for (String string : StringList){
+        for (String string : StringList) {
             returnString += string;
             Comma += 1;
-            if (Comma < (StringList.size())){
+            if (Comma < (StringList.size())) {
                 returnString += ", ";
             }
 
         }
         return returnString;
     }
-    private boolean returnScreenSize(){
+
+    private boolean returnScreenSize() {
         DisplayMetrics dm = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(dm);
-        int width=dm.widthPixels;
-        int height=dm.heightPixels;
-        int dens=dm.densityDpi;
-        double wi=(double)width/(double)dens;
-        double hi=(double)height/(double)dens;
-        double x = Math.pow(wi,2);
-        double y = Math.pow(hi,2);
-        return Math.sqrt(x+y) >= 6.7;
+        int width = dm.widthPixels;
+        int height = dm.heightPixels;
+        int dens = dm.densityDpi;
+        double wi = (double) width / (double) dens;
+        double hi = (double) height / (double) dens;
+        double x = Math.pow(wi, 2);
+        double y = Math.pow(hi, 2);
+        return Math.sqrt(x + y) >= 6.7;
     }
 
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -245,7 +247,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         getLoaderManager().restartLoader(0, null, this);
     }
 
-    public void onNothingSelected(AdapterView<?> parent) {}
+    public void onNothingSelected(AdapterView<?> parent) {
+    }
 
 }
 

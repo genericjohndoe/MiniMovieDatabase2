@@ -10,4 +10,6 @@
     <string name="title_activity_detail">Additional Movie Details</string>
     <string name="Fav">Favorite</string>
     <string name="trailers">Movie Trailers</string>
+    <string name="search_popular">popular</string>
+    <string name="search_top_rated">top_rated</string>
 </resources>
