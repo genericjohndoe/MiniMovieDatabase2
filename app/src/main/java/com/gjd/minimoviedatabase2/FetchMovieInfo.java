@@ -23,7 +23,7 @@ import java.util.Vector;
 /**
  * AsyncTask is responsible for retrieving text based movie details
  */
-public class FetchMovieInfo extends AsyncTask<Void, Void, Void> {
+public class FetchMovieInfo extends AsyncTask<String, Void, Void> {
 
     private final Context mContext;
     int inserted;
@@ -55,6 +55,7 @@ public class FetchMovieInfo extends AsyncTask<Void, Void, Void> {
             movieValues.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, movie.getString("original_language"));
             movieValues.put(MovieContract.MovieEntry.COLUMN_POPULARITY, movie.getDouble("popularity"));
             movieValues.put(MovieContract.MovieEntry.COLUMN_API_ID, movie.getString("id"));
+            movieValues.put(MovieContract.MovieEntry.COLUMN_IS_FAVORITE, 0);
             cVVector.add(movieValues);
         }
 
@@ -70,7 +71,7 @@ public class FetchMovieInfo extends AsyncTask<Void, Void, Void> {
      * @param params is input from .execute()
      */
     @Override
-    protected Void doInBackground(Void... params) {
+    protected Void doInBackground(String... params) {
 
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -84,7 +85,7 @@ public class FetchMovieInfo extends AsyncTask<Void, Void, Void> {
 
         try {
             // Construct the URL for the TheMovieDb
-            MOVIE_API_URL = "https://api.themoviedb.org/3/movie/popular?api_key=4d2fe91044a113962494d96fba3bdfd6";
+            MOVIE_API_URL = "https://api.themoviedb.org/3/movie/"+params[0]+"?api_key=4d2fe91044a113962494d96fba3bdfd6";
 
             Uri builtUri = Uri.parse(MOVIE_API_URL).buildUpon()
                     .build();

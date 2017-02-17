@@ -1,7 +1,9 @@
 package com.gjd.minimoviedatabase2;
 
+import android.content.ContentValues;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
@@ -23,6 +25,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gjd.minimoviedatabase2.data.MovieContract;
+import com.gjd.minimoviedatabase2.data.MovieDbHelper;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -171,8 +174,14 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     public void addFavorite() {
-        boolean added = MainActivityFragment.favorites.add(Integer.toString(api_id));
-        if (added) {
+        SQLiteDatabase db = new MovieDbHelper(getContext()).getReadableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(MovieContract.MovieEntry.COLUMN_IS_FAVORITE, 1);
+        String selection = MovieContract.MovieEntry.COLUMN_API_ID + " = " + api_id;
+        //String[] selectionArgs = {MovieContract.MovieEntry.COLUMN_IS_FAVORITE};
+        int count = db.update(MovieContract.MovieEntry.TABLE_NAME,values,selection, null);
+
+        if (count == 1) {
             CharSequence text = "Added to Favorites";
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(getContext(), text, duration);
@@ -182,13 +191,19 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     }
 
     public void deleteFavorite() {
-        boolean deleted = MainActivityFragment.favorites.remove(Integer.toString(api_id));
-        if (deleted) {
+        SQLiteDatabase db = new MovieDbHelper(getContext()).getReadableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(MovieContract.MovieEntry.COLUMN_IS_FAVORITE, 0);
+        String selection = MovieContract.MovieEntry.COLUMN_API_ID + " = " + api_id;
+        //String[] selectionArgs = {MovieContract.MovieEntry.COLUMN_IS_FAVORITE};
+        int count = db.update(MovieContract.MovieEntry.TABLE_NAME,values,selection, null);
+
+        if (count == 1) {
             CharSequence text = "Deleted from Favorites";
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(getContext(), text, duration);
             toast.show();
-            favorited = false;
+            favorited = true;
         }
     }
 

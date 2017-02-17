@@ -1,6 +1,5 @@
 package com.gjd.minimoviedatabase2;
 
-import android.content.ContentResolver;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -29,7 +28,6 @@ import android.widget.Toast;
 
 import com.gjd.minimoviedatabase2.data.MovieContract;
 
-import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 
@@ -41,7 +39,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     private MovieAdapter mAdapter;
     private static final int MOVIE_LOADER = 0;
     private int mPosition = RecyclerView.NO_POSITION;
-    static Set<String> favorites;
     static Integer favCount;
     int spinnerState;
     Spinner spinner;
@@ -75,7 +72,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        favorites = prefs.getStringSet("Favorites", new LinkedHashSet<String>());
         spinnerState = prefs.getInt("Spinner State", 0);
         spinnerString = prefs.getString("Default", "Popularity");
 
@@ -136,7 +132,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     private void updateSort() {
         try {
             FetchMovieInfo movieTask = new FetchMovieInfo(getContext());
-            movieTask.execute();
+            String search = spinnerString.equals(getString(R.string.pref_popularity)) ? "popular" : "top_rated";
+            movieTask.execute(search);
             movieTask.get();
         } catch (InterruptedException e) {
             Log.i("InterruptedException", "yes");
@@ -163,7 +160,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         super.onDestroy();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putStringSet("Favorites",favorites);
         editor.putInt("Spinner State",  spinner.getSelectedItemPosition());
         editor.putString("Default", spinnerString);
         editor.commit();
@@ -171,30 +167,29 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle){
-        return new CursorLoader(getContext(), MovieContract.MovieEntry.CONTENT_URI,
-                MOVIE_COLUMNS, null, null, null);
+        if (spinnerString.equals(getString(R.string.pref_popularity))) {
+            String sortOrder = MovieContract.MovieEntry.COLUMN_POPULARITY + " DESC";
+            return new CursorLoader(getContext(), MovieContract.MovieEntry.CONTENT_URI,
+                    MOVIE_COLUMNS, null, null, sortOrder);
+        }
+        else if  (spinnerString.equals(getString(R.string.pref_highest_rated))){
+            String sortOrder = MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE + " DESC";
+            return new CursorLoader(getContext(), MovieContract.MovieEntry.CONTENT_URI,
+                    MOVIE_COLUMNS, null, null, sortOrder);
+        }
+        else {
+            return new CursorLoader(getContext(), MovieContract.MovieEntry.CONTENT_URI,
+                    MOVIE_COLUMNS, MovieContract.MovieEntry.COLUMN_IS_FAVORITE + "= 1", null, null);
+        }
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
-        ContentResolver resolver = getContext().getContentResolver();
-
-        if (spinnerString.equals(getString(R.string.pref_popularity))){
-            data = resolver.query(MovieContract.MovieEntry.CONTENT_URI, MOVIE_COLUMNS,null, null, null);
-        }
-        else if  (spinnerString.equals(getString(R.string.pref_highest_rated))){
-            String sortOrder = MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE + " DESC";
-            data = resolver.query(MovieContract.MovieEntry.CONTENT_URI, MOVIE_COLUMNS,null, null, sortOrder);
-        } else {
-            String selection = MovieContract.MovieEntry.COLUMN_API_ID + " in (" + (toString(favorites) +")");
-            data = resolver.query(MovieContract.MovieEntry.CONTENT_URI, MOVIE_COLUMNS, selection, null, null);
-            if (favorites.isEmpty()) {
-                CharSequence text = "No movies have been favorited.";
-                Toast.makeText(getContext(), text, Toast.LENGTH_LONG).show();
-            }
-
+        if (data.getCount() == 0 && spinnerString.equals(getString(R.string.Fav))) {
+            CharSequence text = "No movies have been favorited.";
+            Toast.makeText(getContext(), text, Toast.LENGTH_LONG).show();
         }
         mAdapter.swapCursor(data);
     }

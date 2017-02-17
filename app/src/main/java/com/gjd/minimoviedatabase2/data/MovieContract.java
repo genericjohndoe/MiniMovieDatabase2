@@ -62,6 +62,8 @@ public class MovieContract {
 
         public static final String COLUMN_API_ID = "api_id";
 
+        public static final String COLUMN_IS_FAVORITE = "is_favorite";
+
 
         public static Uri buildMovieUri(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
