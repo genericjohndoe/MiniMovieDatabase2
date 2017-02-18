@@ -6,7 +6,7 @@
     android:baselineAligned="false"
     android:divider="?android:attr/dividerHorizontal"
     android:orientation="horizontal"
-    tools:context="com.example.damienmiller.reely.MainActivity"
+    tools:context="com.gjd.minimoviedatabase2.MainActivity"
     android:id="@+id/MAFragment">
 
     <!--
@@ -15,7 +15,7 @@
 
     <fragment
         android:id="@+id/fragment"
-        android:name="com.example.damienmiller.reely.MainActivityFragment"
+        android:name="com.gjd.minimoviedatabase2.MainActivityFragment"
         android:layout_width="210dp"
         android:layout_height="match_parent"
         tools:layout="@android:layout/list_content" />
