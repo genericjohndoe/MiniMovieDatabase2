@@ -1,6 +1,7 @@
 package com.gjd.minimoviedatabase2;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -40,6 +41,7 @@ import java.util.concurrent.ExecutionException;
 public class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int DETAIL_LOADER = 0;
+    private final String TAG = "DetailFragment";
 
     private final String[] MOVIE_COLUMNS = {
             MovieContract.MovieEntry.TABLE_NAME + "." + MovieContract.MovieEntry.COLUMN_ID,
@@ -66,9 +68,19 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        api_id = (MainActivity.mTwoPane) ? getArguments().getInt("API") :
-        getActivity().getIntent().getExtras().getInt("api_id");
+        if(!MainActivity.mTwoPane) {
+            Intent intent = getActivity().getIntent();
+            Bundle extras = intent.getExtras();
+            if (extras != null) api_id = extras.getInt("api_id");
+        } else {
+            Bundle bundle = getArguments();
+            if (bundle != null){
+                api_id = bundle.getInt("API");
+                Log.i("api_id", Integer.toString(api_id));
+            } else {
+                Log.i(TAG, "bundle is null");
+            }
+        }
 
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -130,28 +142,24 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
 
     @Override
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        if (!MainActivity.mTwoPane) {
             // Now create and return a CursorLoader that will take care of
             // creating a Cursor for the data being displayed.
+            String selection = "api_id = ?";
+            String[] selectionArgs = new String[]{Integer.toString(api_id)};
             return new CursorLoader(
                     getActivity(),
                     MovieContract.MovieEntry.CONTENT_URI,
                     MOVIE_COLUMNS,
-                    null,
-                    null,
+                    selection,
+                    selectionArgs,
                     null
             );
-        }
-        return null;
     }
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
-        String selection = "api_id = ?";
-        String[] selectionArgs = new String[]{Integer.toString(api_id)};
-        data = getContext().getContentResolver().query(MovieContract.MovieEntry.CONTENT_URI, MOVIE_COLUMNS, selection, selectionArgs, null);
         if (data != null && data.moveToFirst()) {
             title.setText("Title: " + data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
             release_date.setText("Release Date: " +
@@ -161,7 +169,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             user_rating.setText("Average Rating: " +
                     Double.toString(data.getDouble(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE))) + "/10.00");
             Picasso.with(getContext()).load(data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH))).into(movie_poster);
-            data.close();
+            //data.close();
         } else {
             CharSequence text = "Movie Details Not Found.";
             int duration = Toast.LENGTH_SHORT;

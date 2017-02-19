@@ -62,6 +62,9 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
 
     @Override
     public void onItemSelected(Uri contentUri, int api) {
+        Intent intent = new Intent(this, DetailActivity.class)
+                .setData(contentUri)
+                .putExtra("api_id", api);
         if (mTwoPane) {
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
@@ -77,10 +80,9 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
                     .replace(R.id.container, fragment, DETAILFRAGMENT_TAG)
                     .commit();
         } else {
-            Intent intent = new Intent(this, DetailActivity.class)
-                    .setData(contentUri)
-                    .putExtra("api_id", api);
-            startActivity(intent);
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            }
         }
     }
 
