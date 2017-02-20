@@ -13,7 +13,6 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,7 +28,6 @@ import android.widget.Toast;
 import com.gjd.minimoviedatabase2.data.MovieContract;
 
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -130,20 +128,11 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     private void updateSort() {
         FetchMovieInfo movieTask = new FetchMovieInfo(getContext());
-        try {
-            String search = spinnerString.equals(getString(R.string.pref_popularity)) ? getString(R.string.search_popular) : getString(R.string.search_top_rated);
-            movieTask.execute(search);
-            //the reason why the .get() function is here is because this will update the UI automatically
-            //when the loader has data, without it screen rotation is required to get the movie icons to show initially
-            movieTask.get();
-        }catch (InterruptedException e){
-            Log.e(TAG, e.toString());
-        }catch (ExecutionException e){
-            Log.e(TAG,e.toString());
-        }
+        String search = spinnerString.equals(getString(R.string.pref_popularity)) ? getString(R.string.search_popular) : getString(R.string.search_top_rated);
+        movieTask.execute(search);
     }
 
-    private void updateSortTop(){
+    private void updateSortTop() {
         //this method was add to ensure the top rated movies where in the database by the time
         //they needed to be shown on the UI
         FetchMovieInfo movieTask = new FetchMovieInfo(getContext());
@@ -187,6 +176,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
+        data.setNotificationUri(getActivity().getContentResolver(), MovieContract.MovieEntry.CONTENT_URI);
         if (data.getCount() == 0 && spinnerString.equals(getString(R.string.Fav))) {
             CharSequence text = "No movies have been favorited.";
             Toast.makeText(getContext(), text, Toast.LENGTH_LONG).show();
