@@ -10,7 +10,7 @@ import android.net.Uri;
 import android.util.Log;
 
 /**
- * Created by perniciousmagician on 4/1/16.
+ * Content Provider for SQLite database
  */
 public class MovieProvider extends ContentProvider {
 

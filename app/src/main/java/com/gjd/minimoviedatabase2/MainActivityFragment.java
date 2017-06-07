@@ -27,20 +27,16 @@ import android.widget.Toast;
 
 import com.gjd.minimoviedatabase2.data.MovieContract;
 
-import java.util.Set;
-
 /**
  * A placeholder fragment containing a simple view.
  */
 public class MainActivityFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor>, AdapterView.OnItemSelectedListener {
-    private final String TAG = "MainFragment";
     private RecyclerView mRecyclerView;
     private MovieAdapter mAdapter;
     private static final int MOVIE_LOADER = 0;
-    private int mPosition = RecyclerView.NO_POSITION;
-    int spinnerState;
-    Spinner spinner;
-    String spinnerString;
+    private int spinnerState;
+    private Spinner spinner;
+    private String spinnerString;
 
 
     private static final String[] MOVIE_COLUMNS = {
@@ -48,7 +44,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             MovieContract.MovieEntry.COLUMN_TITLE, MovieContract.MovieEntry.COLUMN_OVERVIEW,
             MovieContract.MovieEntry.COLUMN_RELEASE_DATE, MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE,
             MovieContract.MovieEntry.COLUMN_POPULARITY, MovieContract.MovieEntry.COLUMN_POSTER_PATH,
-            MovieContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, MovieContract.MovieEntry.COLUMN_API_ID,
+            MovieContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, MovieContract.MovieEntry.COLUMN_API_ID
     };
 
 
@@ -59,7 +55,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         /**
          * DetailFragmentCallback for when an item has been selected.
          */
-        public void onItemSelected(Uri Uri, int api);
+        void onItemSelected(Uri Uri, int api, View view);
     }
 
 
@@ -93,14 +89,15 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
         mAdapter = new MovieAdapter(getActivity(), new MovieAdapter.MovieOnClickHandler() {
             @Override
-            public void onClick(long id, MovieAdapter.MovieViewHolder vh, int api) {
+            public void onClick(long id, MovieAdapter.MovieViewHolder vh, int api, View view) {
                 ((Callback) getActivity())
-                        .onItemSelected(MovieContract.MovieEntry.buildMovieUri(id + 1), api);
+                        .onItemSelected(MovieContract.MovieEntry.buildMovieUri(id + 1), api, view);
             }
         }, emptyView);
 
-        // specify an adapter (see also next example)
         mRecyclerView.setAdapter(mAdapter);
+
+        // specify an adapter (see also next exam
 
         return rootView;
     }
@@ -153,7 +150,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt("Spinner State", spinner.getSelectedItemPosition());
         editor.putString("Default", spinnerString);
-        editor.commit();
+        editor.apply();
     }
 
     @Override
@@ -177,6 +174,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
         data.setNotificationUri(getActivity().getContentResolver(), MovieContract.MovieEntry.CONTENT_URI);
+
         if (data.getCount() == 0 && spinnerString.equals(getString(R.string.Fav))) {
             CharSequence text = "No movies have been favorited.";
             Toast.makeText(getContext(), text, Toast.LENGTH_LONG).show();
@@ -189,10 +187,9 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         // above is about to be closed.  We need to make sure we are no
         // longer using it.
         mAdapter.swapCursor(null);
-        ;
     }
 
-    public int numberOfColumns() {
+    private int numberOfColumns() {
         final int posterWidth = 105;
         final int DIPperInch = 160;
         DisplayMetrics metrics = new DisplayMetrics();
@@ -203,20 +200,6 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         } else {
             return Math.round(metrics.widthPixels / metrics.xdpi * DIPperInch / posterWidth);
         }
-    }
-
-    public String toString(Set<String> StringList) {
-        String returnString = "";
-        int Comma = 0;
-        for (String string : StringList) {
-            returnString += string;
-            Comma += 1;
-            if (Comma < (StringList.size())) {
-                returnString += ", ";
-            }
-
-        }
-        return returnString;
     }
 
     private boolean returnScreenSize() {

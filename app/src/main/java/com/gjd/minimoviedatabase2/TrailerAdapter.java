@@ -7,13 +7,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.ImageButton;
 
 /**
- * Created by joeljohnson on 7/7/16.
+ * Used to format trailers in details fragment
  */
 public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.TrailerViewHolder> {
-    Context mContext;
+    private final Context mContext;
 
 
     TrailerAdapter(Context context){
@@ -21,10 +21,10 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.TrailerV
     }
 
     public class TrailerViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
-       TextView trailer;
+       final ImageButton trailer;
         public TrailerViewHolder(View view){
             super(view);
-            trailer = (TextView) view.findViewById(R.id.trailer_textview);
+            trailer = (ImageButton) view.findViewById(R.id.trailer_button);
             view.setOnClickListener(this);
         }
 
@@ -37,7 +37,7 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.TrailerV
     }
 
     public void onBindViewHolder(TrailerViewHolder holder, int position){
-        holder.trailer.setText("Trailer #" + (position + 1) + "     |");
+        holder.trailer.setImageResource(R.drawable.ic_local_movies_black_24dp);
     }
 
     public TrailerViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType){

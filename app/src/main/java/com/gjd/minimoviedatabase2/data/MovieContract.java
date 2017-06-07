@@ -48,7 +48,6 @@ public class MovieContract {
 
         public static final String COLUMN_RELEASE_DATE = "release_date";
 
-        public static final String COLUMN_GENRES = "genres";
 
         public static final String COLUMN_ID = "_id";
 

@@ -1,5 +1,6 @@
 package com.gjd.minimoviedatabase2;
 
+import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -8,7 +9,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
+import android.view.View;
 import android.widget.Toast;
+import android.util.Pair;
 
 
 public class MainActivity extends AppCompatActivity implements MainActivityFragment.Callback {
@@ -61,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
     }
 
     @Override
-    public void onItemSelected(Uri contentUri, int api) {
+    public void onItemSelected(Uri contentUri, int api, View view) {
         Intent intent = new Intent(this, DetailActivity.class)
                 .setData(contentUri)
                 .putExtra("api_id", api);
@@ -81,7 +84,12 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
                     .commit();
         } else {
             if (intent.resolveActivity(getPackageManager()) != null) {
-                startActivity(intent);
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    startActivity(intent,
+                            ActivityOptions.makeSceneTransitionAnimation(this, new Pair(view, view.getTransitionName())).toBundle());
+                }else {
+                    startActivity(intent);
+                }
             }
         }
     }

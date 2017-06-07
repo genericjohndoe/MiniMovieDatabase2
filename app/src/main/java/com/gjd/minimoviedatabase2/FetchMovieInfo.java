@@ -2,7 +2,6 @@ package com.gjd.minimoviedatabase2;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -12,13 +11,12 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Vector;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 /**
  * AsyncTask is responsible for retrieving text based movie details
@@ -70,6 +68,7 @@ public class FetchMovieInfo extends AsyncTask<String, Void, Void> {
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
             inserted = mContext.getContentResolver().bulkInsert(MovieContract.MovieEntry.CONTENT_URI, cvArray);
+            Log.i("MMD2", "movies inserted " + inserted);
         }
     }
 
@@ -80,73 +79,21 @@ public class FetchMovieInfo extends AsyncTask<String, Void, Void> {
     @Override
     protected Void doInBackground(String... params) {
 
-        // These two need to be declared outside the try/catch
-        // so that they can be closed in the finally block.
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
-
-        // Will contain the raw JSON response as a string.
-        String JsonStr = null;
         final String MOVIE_API_URL;
+        OkHttpClient client = new OkHttpClient();
 
+        MOVIE_API_URL = "https://api.themoviedb.org/3/movie/" + params[0] + "?api_key=" +  BuildConfig.MOVIE_API_KEY;
+
+        Request request = new Request.Builder()
+                .url(MOVIE_API_URL)
+                .build();
 
         try {
-            // Construct the URL for the TheMovieDb
-            MOVIE_API_URL = "https://api.themoviedb.org/3/movie/"+params[0]+"?api_key=4d2fe91044a113962494d96fba3bdfd6";
-
-            Uri builtUri = Uri.parse(MOVIE_API_URL).buildUpon()
-                    .build();
-
-            URL url = new URL(builtUri.toString());
-
-            // Create the request to TheMovieDb, and open the connection
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.connect();
-
-            // Read the input stream into a String
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-            if (inputStream == null) {
-                // Nothing to do.
-                return null;
-            }
-            reader = new BufferedReader(new InputStreamReader(inputStream));
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                // But it does make debugging a *lot* easier if you print out the completed
-                // buffer for debugging.
-                buffer.append(line + "\n");
-            }
-
-            if (buffer.length() == 0) {
-                // Stream was empty.  No point in parsing.
-                //return null;
-            }
-            JsonStr = buffer.toString();
-        } catch (IOException e) {
-            Log.e("Error ", "Error ", e);
-            // If the code didn't successfully get the weather data, there's no point in attemping
-            // to parse it.
+            Response response = client.newCall(request).execute();
+            getMovieInfoFromJSON(response.body().string(),params[0]);
             return null;
-        } finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e("Error ", "Error closing stream", e);
-                }
-            }
-        }
-        try {
-            getMovieInfoFromJSON(JsonStr, params[0]);
-        } catch (JSONException e) {
-            e.printStackTrace();
+        } catch (IOException | JSONException | IllegalStateException e) {
+            Log.e("FetchMovieInfo", e.toString());
         }
         return null;
 

@@ -36,7 +36,7 @@ import java.util.concurrent.ExecutionException;
 //        .data.MovieContract;
 
 /**
- * Created by joeljohnson on 4/30/16.
+ * Fragment show movie details
  */
 public class DetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -48,21 +48,20 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             MovieContract.MovieEntry.COLUMN_TITLE, MovieContract.MovieEntry.COLUMN_OVERVIEW,
             MovieContract.MovieEntry.COLUMN_RELEASE_DATE, MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE,
             MovieContract.MovieEntry.COLUMN_POPULARITY, MovieContract.MovieEntry.COLUMN_POSTER_PATH,
-            MovieContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, MovieContract.MovieEntry.COLUMN_API_ID,
+            MovieContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, MovieContract.MovieEntry.COLUMN_API_ID
     };
 
-    TextView title;
-    TextView release_date;
-    TextView plot;
-    TextView user_rating;
-    ImageView movie_poster;
-    CheckBox button;
-    RecyclerView movieTrailers;
-    ListView listView;
+    private TextView release_date;
+    private TextView plot;
+    private TextView user_rating;
+    private ImageView movie_poster;
+    private CheckBox button;
+    private RecyclerView movieTrailers;
+    private ListView listView;
     static ArrayAdapter<String> mAdapter;
-    int api_id;
+    private int api_id;
     static String[] trailers;
-    boolean favorited;
+    private boolean favorited;
 
 
     @Override
@@ -87,7 +86,6 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         favorited = prefs.getBoolean("Favorited " + Integer.toString(api_id), false);
 
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-        title = (TextView) rootView.findViewById(R.id.movie_title);
         release_date = (TextView) rootView.findViewById(R.id.movie_release_date);
         plot = (TextView) rootView.findViewById(R.id.movie_plot);
         user_rating = (TextView) rootView.findViewById(R.id.movie_rating);
@@ -124,10 +122,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             FetchYoutubeTrailer movieTrailers = new FetchYoutubeTrailer();
             movieTrailers.execute(Integer.toString(api_id));
             movieTrailers.get();
-        } catch (InterruptedException e) {
+        } catch (InterruptedException |ExecutionException e) {
             Log.i("InterruptedException", "yes");
-        } catch (ExecutionException e) {
-            Log.i("execution exception", "yes");
         }
     }
 
@@ -137,7 +133,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         SharedPreferences.Editor editor = prefs.edit();
         editor.putBoolean("Favorited " + Integer.toString(api_id), favorited);
-        editor.commit();
+        editor.apply();
     }
 
     @Override
@@ -161,15 +157,16 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         // Swap the new cursor in.  (The framework will take care of closing the
         // old cursor once we return.)
         if (data != null && data.moveToFirst()) {
-            title.setText("Title: " + data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
-            release_date.setText("Release Date: " +
+            getActivity().setTitle(data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
+            release_date.setText(getString(R.string.release_date) +
                     data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE)));
-            plot.setText("Plot: \n" +
+            plot.setText(getString(R.string.plot) +
                     data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)));
-            user_rating.setText("Average Rating: " +
-                    Double.toString(data.getDouble(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE))) + "/10.00");
+            user_rating.setText(getString(R.string.rating) +
+                    Double.toString(data.getDouble(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE))));
             Picasso.with(getContext()).load(data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH))).into(movie_poster);
             //data.close();
+            movie_poster.setContentDescription(getString(R.string.movie_poster_CD) + " "+ getActivity().getTitle());
         } else {
             CharSequence text = "Movie Details Not Found.";
             int duration = Toast.LENGTH_SHORT;
@@ -181,12 +178,11 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
     public void onLoaderReset(Loader<Cursor> loader) {
     }
 
-    public void addFavorite() {
+    private void addFavorite() {
         SQLiteDatabase db = new MovieDbHelper(getContext()).getReadableDatabase();
         ContentValues values = new ContentValues();
         values.put(MovieContract.MovieEntry.COLUMN_IS_FAVORITE, 1);
         String selection = MovieContract.MovieEntry.COLUMN_API_ID + " = " + api_id;
-        //String[] selectionArgs = {MovieContract.MovieEntry.COLUMN_IS_FAVORITE};
         int count = db.update(MovieContract.MovieEntry.TABLE_NAME,values,selection, null);
 
         if (count == 1) {
@@ -198,12 +194,11 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         }
     }
 
-    public void deleteFavorite() {
+    private void deleteFavorite() {
         SQLiteDatabase db = new MovieDbHelper(getContext()).getReadableDatabase();
         ContentValues values = new ContentValues();
         values.put(MovieContract.MovieEntry.COLUMN_IS_FAVORITE, 0);
         String selection = MovieContract.MovieEntry.COLUMN_API_ID + " = " + api_id;
-        //String[] selectionArgs = {MovieContract.MovieEntry.COLUMN_IS_FAVORITE};
         int count = db.update(MovieContract.MovieEntry.TABLE_NAME,values,selection, null);
 
         if (count == 1) {
@@ -215,7 +210,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         }
     }
 
-    public void FavoriteList(View v, boolean checked) {
+    private void FavoriteList(View v, boolean checked) {
         if (checked) {
             addFavorite();
         } else {

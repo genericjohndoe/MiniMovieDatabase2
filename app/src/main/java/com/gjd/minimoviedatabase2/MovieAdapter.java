@@ -12,26 +12,24 @@ import com.gjd.minimoviedatabase2.data.MovieContract;
 import com.squareup.picasso.Picasso;
 
 /**
- * Created by perniciousmagician on 4/13/16.
+ * this class formats cells for recyclerview
  */
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder> {
 
-    Context mContext;
+    private final Context mContext;
     final private MovieOnClickHandler mClickHandler;
-    Cursor mCursor;
-    int apiID;
-    int isFavorite;
-    final private View mEmptyView;
-
+    private Cursor mCursor;
+    private int apiID;
+    private View emptyView;
 
     MovieAdapter(Context context, MovieOnClickHandler dh, View emptyView){
         mContext = context;
         mClickHandler = dh;
-        mEmptyView = emptyView;
+        this.emptyView = emptyView;
     }
 
     public class MovieViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        ImageView poster;
+        final ImageView poster;
 
         public MovieViewHolder(View view) {
             super(view);
@@ -42,13 +40,17 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         @Override
         public void onClick(View view){
             int adapterPosition = getAdapterPosition();
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
+                poster.setTransitionName(mContext.getString(R.string.transition));
             mCursor.moveToPosition(adapterPosition);
             apiID = mCursor.getInt(mCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_API_ID));
-            mClickHandler.onClick(adapterPosition, this, apiID);
+            String title = mCursor.getString(mCursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE));
+            poster.setContentDescription(title);
+            mClickHandler.onClick(adapterPosition, this, apiID, poster);
         }
     }
-    public static interface MovieOnClickHandler {
-        void onClick(long id, MovieViewHolder vh, int api);
+    public interface MovieOnClickHandler {
+        void onClick(long id, MovieViewHolder vh, int api, View view);
     }
 
     @Override
