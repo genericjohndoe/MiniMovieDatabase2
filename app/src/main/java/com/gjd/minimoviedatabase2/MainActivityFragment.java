@@ -53,7 +53,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
 
     public interface Callback {
         /**
-         * DetailFragmentCallback for when an item has been selected.
+         * DetailFragmentCallback for when an item has been selected. used to pass nformation from
+         * fragment to activity
          */
         void onItemSelected(Uri Uri, int api, View view);
     }
@@ -65,8 +66,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         // Add this line in order for this fragment to handle menu events.
         setHasOptionsMenu(true);
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        spinnerState = prefs.getInt("Spinner State", 0);
-        spinnerString = prefs.getString("Default", "Popularity");
+        spinnerState = prefs.getInt(getString(R.string.spinner_state), 0);
+        spinnerString = prefs.getString(getString(R.string.Default), getString(R.string.pref_popularity));
 
         setHasOptionsMenu(true);
     }
@@ -130,7 +131,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
     }
 
     private void updateSortTop() {
-        //this method was add to ensure the top rated movies where in the database by the time
+        //this method was add to ensure the top rated movies were in the database by the time
         //they needed to be shown on the UI
         FetchMovieInfo movieTask = new FetchMovieInfo(getContext());
         movieTask.execute(getString(R.string.search_top_rated));
@@ -148,8 +149,8 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         super.onDestroy();
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         SharedPreferences.Editor editor = prefs.edit();
-        editor.putInt("Spinner State", spinner.getSelectedItemPosition());
-        editor.putString("Default", spinnerString);
+        editor.putInt(getString(R.string.spinner_state), spinner.getSelectedItemPosition());
+        editor.putString(getString(R.string.Default), spinnerString);
         editor.apply();
     }
 
@@ -176,7 +177,7 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         data.setNotificationUri(getActivity().getContentResolver(), MovieContract.MovieEntry.CONTENT_URI);
 
         if (data.getCount() == 0 && spinnerString.equals(getString(R.string.Fav))) {
-            CharSequence text = "No movies have been favorited.";
+            CharSequence text = getString(R.string.no_fav);
             Toast.makeText(getContext(), text, Toast.LENGTH_LONG).show();
         }
         mAdapter.swapCursor(data);
@@ -188,6 +189,12 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
         // longer using it.
         mAdapter.swapCursor(null);
     }
+
+    /**
+     * this app returns the number of columns based on the width of the phone, the orientation, and
+     * the size of the image populating the recyclerview cell
+     * @return number of columns
+     */
 
     private int numberOfColumns() {
         final int posterWidth = 105;
@@ -201,6 +208,11 @@ public class MainActivityFragment extends Fragment implements LoaderManager.Load
             return Math.round(metrics.widthPixels / metrics.xdpi * DIPperInch / posterWidth);
         }
     }
+
+    /**
+     *
+     * @return true if the diagonal is greater than 6.7 inches
+     */
 
     private boolean returnScreenSize() {
         DisplayMetrics dm = new DisplayMetrics();

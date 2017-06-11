@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityFragm
                 activeNetwork.isConnectedOrConnecting();
 
         if (!isConnected){
-            CharSequence text = "No Network Connection Found";
+            CharSequence text = getString(R.string.no_network);
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(this, text, duration);
             toast.show();

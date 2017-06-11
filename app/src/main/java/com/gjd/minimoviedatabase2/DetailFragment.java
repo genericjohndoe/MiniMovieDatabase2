@@ -32,6 +32,9 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
+import static com.gjd.minimoviedatabase2.R.id.movie_poster;
+import static com.gjd.minimoviedatabase2.R.string.release_date;
+
 //.data.MovieContract;
 //        .data.MovieContract;
 
@@ -51,10 +54,10 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             MovieContract.MovieEntry.COLUMN_ORIGINAL_LANGUAGE, MovieContract.MovieEntry.COLUMN_API_ID
     };
 
-    private TextView release_date;
+    private TextView releaseDate;
     private TextView plot;
-    private TextView user_rating;
-    private ImageView movie_poster;
+    private TextView userRating;
+    private ImageView moviePoster;
     private CheckBox button;
     private RecyclerView movieTrailers;
     private ListView listView;
@@ -81,15 +84,15 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             }
         }
 
-
+        //checkBox status saved to shared prefs because loading from database took too long
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
         favorited = prefs.getBoolean("Favorited " + Integer.toString(api_id), false);
 
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-        release_date = (TextView) rootView.findViewById(R.id.movie_release_date);
+        releaseDate = (TextView) rootView.findViewById(R.id.movie_release_date);
         plot = (TextView) rootView.findViewById(R.id.movie_plot);
-        user_rating = (TextView) rootView.findViewById(R.id.movie_rating);
-        movie_poster = (ImageView) rootView.findViewById(R.id.movie_poster);
+        userRating = (TextView) rootView.findViewById(R.id.movie_rating);
+        moviePoster = (ImageView) rootView.findViewById(movie_poster);
         button = (CheckBox) rootView.findViewById(R.id.Fav);
         button.setChecked(favorited);
         button.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -122,8 +125,8 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
             FetchYoutubeTrailer movieTrailers = new FetchYoutubeTrailer();
             movieTrailers.execute(Integer.toString(api_id));
             movieTrailers.get();
-        } catch (InterruptedException |ExecutionException e) {
-            Log.i("InterruptedException", "yes");
+        } catch (InterruptedException | ExecutionException e) {
+            Log.i("DFException", e.toString());
         }
     }
 
@@ -158,17 +161,17 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         // old cursor once we return.)
         if (data != null && data.moveToFirst()) {
             getActivity().setTitle(data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)));
-            release_date.setText(getString(R.string.release_date) +
+            releaseDate.setText(getString(release_date) +
                     data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE)));
             plot.setText(getString(R.string.plot) +
                     data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_OVERVIEW)));
-            user_rating.setText(getString(R.string.rating) +
+            userRating.setText(getString(R.string.rating) +
                     Double.toString(data.getDouble(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_VOTE_AVERAGE))));
-            Picasso.with(getContext()).load(data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH))).into(movie_poster);
-            //data.close();
-            movie_poster.setContentDescription(getString(R.string.movie_poster_CD) + " "+ getActivity().getTitle());
+            Picasso.with(getContext()).load(data.getString(data.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH)))
+                    .into(moviePoster);
+            moviePoster.setContentDescription(getString(R.string.movie_poster_CD) + " " + getActivity().getTitle());
         } else {
-            CharSequence text = "Movie Details Not Found.";
+            CharSequence text = getString(R.string.no_details);
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(getContext(), text, duration);
             toast.show();
@@ -186,7 +189,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         int count = db.update(MovieContract.MovieEntry.TABLE_NAME,values,selection, null);
 
         if (count == 1) {
-            CharSequence text = "Added to Favorites";
+            CharSequence text = getString(R.string.add_fav);
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(getContext(), text, duration);
             toast.show();
@@ -202,7 +205,7 @@ public class DetailFragment extends Fragment implements LoaderManager.LoaderCall
         int count = db.update(MovieContract.MovieEntry.TABLE_NAME,values,selection, null);
 
         if (count == 1) {
-            CharSequence text = "Deleted from Favorites";
+            CharSequence text = getString(R.string.del_fav);
             int duration = Toast.LENGTH_SHORT;
             Toast toast = Toast.makeText(getContext(), text, duration);
             toast.show();

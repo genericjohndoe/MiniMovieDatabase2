@@ -14,4 +14,11 @@
     <string name="plot">Plot\n\n</string>
     <string name="rating">Average Rating:\n</string>
     <string name="transition">image</string>
+    <string name="spinner_state">Spinner State</string>
+    <string name="Default">Default</string>
+    <string name="no_fav">No movies have been favorited.</string>
+    <string name="no_network">No Network Connection Found</string>
+    <string name="no_details">Movie Details Not Found.</string>
+    <string name="add_fav">Added to Favorites</string>
+    <string name="del_fav">Deleted from Favorites</string>
 </resources>
